@@ -25,9 +25,9 @@ This is a production-ready API microservice with:
 **Before writing any code, read these in order:**
 
 1. **[CLAUDE.md](CLAUDE.md)** - Behavioral guidelines (think before coding, simplicity first, surgical changes)
-2. **[API-STANDARDS.md](API-STANDARDS.md)** - Complete API design reference
-3. **[.claude/rules/chi-api-standards.instructions.md](.claude/rules/chi-api-standards.instructions.md)** - Enforced API patterns
-4. **[.claude/rules/postgresql-schema-standards.instructions.md](.claude/rules/postgresql-schema-standards.instructions.md)** - Database design rules
+2. **Backend API:** [.claude/rules/chi-api-standards.instructions.md](.claude/rules/chi-api-standards.instructions.md)
+3. **Frontend API:** [.claude/rules/fe-api-intigration-standards.instructions.md](.claude/rules/fe-api-intigration-standards.instructions.md)
+4. **Database:** [.claude/rules/postgresql-schema-standards.instructions.md](.claude/rules/postgresql-schema-standards.instructions.md)
 
 ---
 
@@ -35,14 +35,15 @@ This is a production-ready API microservice with:
 
 ```
 .
-├── main.go                           # API server (Chi router, middleware, handlers)
-├── API-STANDARDS.md                  # Comprehensive API reference
-├── CLAUDE.md                          # Behavioral guidelines for AI agents
+├── main.go                                    # API server (Chi router, middleware, handlers)
+├── CLAUDE.md                                  # Behavioral guidelines for AI agents
+├── AGENTS.md                                  # This file - AI agent guide
 ├── .claude/rules/
-│   ├── chi-api-standards.instructions.md      # API pattern enforcement
-│   └── postgresql-schema-standards.instructions.md  # DB schema enforcement
+│   ├── chi-api-standards.instructions.md                 # Backend API pattern enforcement
+│   ├── fe-api-intigration-standards.instructions.md      # Frontend API integration standards
+│   └── postgresql-schema-standards.instructions.md       # Database design enforcement
 └── .github/
-    └── copilot-instructions.md       # Karpathy guidelines
+    └── copilot-instructions.md                # Karpathy behavioral guidelines
 ```
 
 ---
@@ -359,23 +360,28 @@ Follow these in order:
    - Surface assumptions
    - Simplicity first
    
-2. **Check API standards** ([API-STANDARDS.md](API-STANDARDS.md))
+2. **Check backend API standards** ([.claude/rules/chi-api-standards.instructions.md](.claude/rules/chi-api-standards.instructions.md))
    - Response format
    - Status codes
    - Error codes
    
-3. **Review existing handler** in [main.go](main.go)
+3. **Check frontend API standards** ([.claude/rules/fe-api-intigration-standards.instructions.md](.claude/rules/fe-api-intigration-standards.instructions.md))
+   - API client setup
+   - Error handling
+   - Authentication
+   
+4. **Review existing handler** in [main.go](main.go)
    - Pattern for request/response
    - How to use helpers
    - Route organization
 
-4. **Apply template** from "Handler Template" section above
+5. **Apply template** from "Handler Template" section above
    - Validate input
    - Check auth
    - Execute logic
    - Return response
 
-5. **Verify** against checklist at end of this file
+6. **Verify** against checklist at end of this file
 
 ---
 
@@ -419,18 +425,19 @@ go build -o api-server main.go
 
 ## Related Documentation
 
-- **[API-STANDARDS.md](API-STANDARDS.md)** - Complete API reference with examples
-- **[.claude/rules/chi-api-standards.instructions.md](.claude/rules/chi-api-standards.instructions.md)** - Agent-enforced API patterns
-- **[.claude/rules/postgresql-schema-standards.instructions.md](.claude/rules/postgresql-schema-standards.instructions.md)** - Database design standards
-- **[CLAUDE.md](CLAUDE.md)** - Behavioral guidelines (think, simplicity, surgical changes)
-- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Karpathy guidelines
+- **Backend API Standards**: [.claude/rules/chi-api-standards.instructions.md](.claude/rules/chi-api-standards.instructions.md)
+- **Frontend API Integration**: [.claude/rules/fe-api-intigration-standards.instructions.md](.claude/rules/fe-api-intigration-standards.instructions.md)
+- **Database Schema Standards**: [.claude/rules/postgresql-schema-standards.instructions.md](.claude/rules/postgresql-schema-standards.instructions.md)
+- **Behavioral Guidelines**: [CLAUDE.md](CLAUDE.md)
+- **Karpathy Guidelines**: [.github/copilot-instructions.md](.github/copilot-instructions.md)
 
 ---
 
 ## Need Help?
 
 For questions about:
-- **API design** → See [API-STANDARDS.md](API-STANDARDS.md)
+- **Backend API design** → See [.claude/rules/chi-api-standards.instructions.md](.claude/rules/chi-api-standards.instructions.md)
+- **Frontend API integration** → See [.claude/rules/fe-api-intigration-standards.instructions.md](.claude/rules/fe-api-intigration-standards.instructions.md)
 - **How to write handlers** → See "Handler Template" above
 - **Code quality** → See [CLAUDE.md](CLAUDE.md)
 - **Database schema** → See [.claude/rules/postgresql-schema-standards.instructions.md](.claude/rules/postgresql-schema-standards.instructions.md)
