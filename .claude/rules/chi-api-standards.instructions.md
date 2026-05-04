@@ -1,7 +1,7 @@
 ---
 name: chi-api-standards
 description: API standards and best practices for Chi microservice development
-applyTo: **/*.go
+applyTo: "**/*.go"
 ---
 
 # Chi Microservice API Standards Instructions
