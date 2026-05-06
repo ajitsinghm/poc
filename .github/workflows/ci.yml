@@ -2,18 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  # ── Go: build, test, lint ─────────────────────────────────────────────────
+  go-build-test:
+    name: Go – Build & Test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -27,22 +27,21 @@ jobs:
       - name: Build
         run: go build ./...
 
-      - name: Run tests
+      - name: Test
         run: go test -race -coverprofile=coverage.out ./...
 
-      - name: Upload coverage
+      - name: Upload Go coverage
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: go-coverage
           path: coverage.out
 
-  lint:
-    name: Lint
+  go-lint:
+    name: Go – Lint
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -50,7 +49,44 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Run golangci-lint
+      - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+
+  # ── React: install, lint, test, build ────────────────────────────────────
+  react-build-test:
+    name: React – Build & Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend   # adjust if your React app lives elsewhere
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Test
+        run: npm test -- --watchAll=false --coverage --passWithNoTests
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload React coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-coverage
+          path: frontend/coverage
