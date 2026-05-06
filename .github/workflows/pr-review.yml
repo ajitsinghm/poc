@@ -5,8 +5,8 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: read        # read-only: workflow cannot push or merge
+  pull-requests: write  # only used to post comments
 
 jobs:
   # ── Go: build + test with PR comment ─────────────────────────────────────
@@ -130,20 +130,51 @@ jobs:
               body,
             });
 
-  # ── Gate: block merge if any check fails ─────────────────────────────────
+  # ── Gate: block merge if any check fails; never auto-merges ─────────────
   all-checks:
-    name: All Checks Passed
+    name: All Checks Passed – Awaiting Human Review
     runs-on: ubuntu-latest
     needs: [go-review, go-lint-review, react-review]
     if: always()
 
+    # No 'contents: write' permission — this job cannot merge anything.
+    # Merging is always a manual action by a human reviewer.
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Verify all jobs passed
+        id: verify
         run: |
           if [[ "${{ needs.go-review.result }}" != "success" || \
                 "${{ needs.go-lint-review.result }}" != "success" || \
                 "${{ needs.react-review.result }}" != "success" ]]; then
+            echo "status=failed" >> "$GITHUB_OUTPUT"
             echo "One or more CI checks failed"
             exit 1
           fi
-          echo "All checks passed"
+          echo "status=passed" >> "$GITHUB_OUTPUT"
+
+      - name: Post review-required comment
+        if: steps.verify.outputs.status == 'passed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                '## ✅ All CI Checks Passed',
+                '',
+                '> **This PR will NOT be merged automatically.**',
+                '> A human reviewer must approve and merge it manually.',
+                '',
+                '| Check | Result |',
+                '|-------|--------|',
+                '| Go build & test | ✅ passed |',
+                '| Go lint | ✅ passed |',
+                '| React build & test | ✅ passed |',
+              ].join('\n'),
+            });
