@@ -15,18 +15,19 @@ import (
 
 // APIResponse is the standard API response envelope
 type APIResponse struct {
-	Status    string     `json:"status"`                   // "success" or "error"
+	Status    string     `json:"status"` // "success" or "error"
 	Data      any        `json:"data,omitempty"`
 	Error     *ErrorInfo `json:"error,omitempty"`
 	RequestID string     `json:"request_id"`
+	Meta      *Metadata  `json:"meta,omitempty"`
 }
 
 // ErrorInfo contains structured error information
 type ErrorInfo struct {
-	Code    string            `json:"code"`              // e.g., "INVALID_INPUT"
-	Message string            `json:"message"`           // human-readable
+	Code    string            `json:"code"`    // e.g., "INVALID_INPUT"
+	Message string            `json:"message"` // human-readable
 	Details string            `json:"details,omitempty"`
-	Fields  map[string]string `json:"fields,omitempty"`  // field-level errors
+	Fields  map[string]string `json:"fields,omitempty"` // field-level errors
 }
 
 // Metadata contains response metadata (pagination, counts, etc.)
@@ -130,9 +131,9 @@ func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 // GetAdminStatsHandler handles GET /api/v1/admin/stats (admin only)
 func GetAdminStatsHandler(w http.ResponseWriter, r *http.Request) {
 	respondSuccess(w, r.Context(), http.StatusOK, map[string]any{
-		"total_users": 1250,
+		"total_users":     1250,
 		"active_sessions": 89,
-		"last_updated": time.Now().UTC().Format(time.RFC3339),
+		"last_updated":    time.Now().UTC().Format(time.RFC3339),
 	}, nil)
 }
 
@@ -271,13 +272,3 @@ func RequireRole(allowedRoles ...string) func(http.Handler) http.Handler {
 	}
 }
 
-// respondError sends an error response with structured error information
-func respondError(w http.ResponseWriter, r *http.Request, statusCode int, errCode, errMsg, details string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(APIResponse{
-		Status:    "error",
-		Error:     &ErrorInfo{Code: errCode, Message: errMsg, Details: details},
-		RequestID: getRequestID(r),
-	})
-}
