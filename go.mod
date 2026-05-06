@@ -1,6 +1,6 @@
 module github.com/ajitsinghm/ai-sample
 
-go 1.26.2
+go 1.24
 
 require (
 	github.com/go-chi/chi/v5 v5.2.5
