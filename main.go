@@ -70,6 +70,7 @@ func main() {
 	r := chi.NewRouter()
 
 	// Global middleware (order matters)
+	r.Use(corsMiddleware)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
@@ -135,6 +136,29 @@ func GetAdminStatsHandler(w http.ResponseWriter, r *http.Request) {
 		"active_sessions": 89,
 		"last_updated":    time.Now().UTC().Format(time.RFC3339),
 	}, nil)
+}
+
+// corsMiddleware adds CORS headers to allow requests from the React dev server
+// and any configured production origin.
+func corsMiddleware(next http.Handler) http.Handler {
+	allowedOrigins := map[string]bool{
+		"http://localhost:5173": true, // Vite dev server
+		"http://localhost:3000": true, // CRA / alternate dev port
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Request-ID")
+		w.Header().Set("Access-Control-Expose-Headers", "X-Request-ID")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // requestIDMiddleware adds a unique request ID to each request context
