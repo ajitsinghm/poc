@@ -19,6 +19,7 @@ go.work.sum
 
 # Dependency directory
 vendor/
+frontend/node_modules/
 
 # Environment files
 .env
