@@ -1,0 +1,78 @@
+name: Copilot PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  copilot-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: GitHub Copilot Code Review
+        uses: github/copilot-code-review-action@v1
+        with:
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          review-instructions: |
+            You are reviewing a Go HTTP microservice built with the Chi router.
+
+            Apply ALL of the following rules during your review:
+
+            ## Response Envelope
+            - Every handler MUST return the standard APIResponse envelope with `status`, `data`/`error`, and `request_id` fields.
+            - Use only `respondSuccess()`, `respondError()`, or `respondValidationError()` helpers — never write raw JSON responses.
+            - Ensure `request_id` is NEVER omitted from any response.
+
+            ## HTTP Status Codes
+            - POST that creates a resource → 201 Created
+            - Successful DELETE → 204 No Content (no response body)
+            - Missing/invalid auth token → 401 with code UNAUTHORIZED
+            - Wrong role → 403 with code FORBIDDEN
+            - Resource not found → 404 with code NOT_FOUND
+            - Field validation errors → 422 with code VALIDATION_FAILED
+            - Bad request format → 400 with code INVALID_INPUT
+            - Server errors → 500 with code INTERNAL_ERROR
+
+            ## Handler Pattern
+            Every handler must follow: validate input → check auth/permissions → execute logic → return response.
+            Fail fast: return immediately after calling respondError(), never continue processing after an error response.
+
+            ## Input Validation
+            - All URL params must be validated before use (e.g., empty string check for IDs).
+            - Request bodies must be decoded and validated via ValidateRequest() before processing.
+            - Never trust raw user input; validate at system boundaries.
+
+            ## Authentication & Authorization
+            - Protected routes must call getClaimsFromContext() and check for nil before accessing claims.
+            - Never expose internal error messages or stack traces in API responses.
+            - Never log sensitive data (passwords, tokens, PII).
+
+            ## Security (OWASP Top 10)
+            - Flag any SQL injection risks (use parameterized queries only).
+            - Flag any hardcoded credentials or secrets.
+            - Flag any missing authorization checks on sensitive operations.
+            - Flag any potential for information disclosure via error messages.
+
+            ## Code Quality
+            - No unused imports or variables.
+            - Error values must be handled — no silent discards.
+            - Context must be propagated to all downstream calls.
+            - No speculative code, unused abstractions, or over-engineering.
+
+            Flag issues with: severity (critical/major/minor), the violated rule, and a concrete fix.
