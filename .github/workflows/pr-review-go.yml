@@ -1,18 +1,23 @@
-name: Copilot PR Review
+name: Go - AI PR Review
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
 
 permissions:
   contents: read
   pull-requests: write
-  models: read  # Required for GitHub Models / AI inference
+  models: read
 
 jobs:
   build-and-test:
-    name: Build & Test
+    name: Go Build & Test
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,8 +28,17 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: go vet
+        run: go vet ./...
+
+      - name: go build
+        run: go build ./...
+
+      - name: go test
+        run: go test ./... -v -race
+
   ai-review:
-    name: AI Code Review
+    name: Go AI Code Review
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event.pull_request.draft == false
@@ -58,7 +72,7 @@ jobs:
               'You are an expert Go code reviewer for a Chi HTTP microservice. Review the diff and report issues using this format:',
               '**[SEVERITY]** `file:line` — problem description and suggested fix.',
               'Severity levels: CRITICAL (security/data loss), MAJOR (correctness/missing auth), MINOR (style/quality).',
-              'If nothing is wrong, say "No issues found."',
+              'If nothing is wrong, say "✅ No issues found."',
               '',
               'Enforce these rules:',
               '1. Every handler must use respondSuccess()/respondError()/respondValidationError() — no raw JSON writes.',
@@ -71,8 +85,8 @@ jobs:
               '7. getClaimsFromContext() result checked for nil before accessing fields.',
               '8. No internal errors or stack traces in API responses.',
               '9. No sensitive data (passwords, tokens, PII) in logs.',
-              '10. OWASP Top 10: flag SQL injection risks, hardcoded secrets, missing auth checks, info disclosure.',
-              '11. No unused imports/variables; all error return values handled; context propagated.'
+              '10. OWASP Top 10: flag SQL injection, hardcoded secrets, missing auth checks, info disclosure.',
+              '11. No unused imports/variables; all error values handled; context propagated to downstream calls.'
             ].join('\n');
 
             const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
@@ -82,7 +96,7 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'gpt-4o-mini',
+                model: 'claude-sonnet-4-5',
                 messages: [
                   { role: 'system', content: systemPrompt },
                   { role: 'user', content: `Review this Go PR diff:\n\`\`\`diff\n${diff}\n\`\`\`` }
@@ -102,12 +116,12 @@ jobs:
             const review = json.choices[0].message.content;
 
             const body = [
-              '## GitHub Copilot AI Code Review',
+              '## 🐹 Go AI Code Review',
               '',
               review,
               '',
               '---',
-              '_Powered by [GitHub Models](https://github.com/marketplace/models) · `gpt-4o-mini`_'
+              '_Powered by [GitHub Models](https://github.com/marketplace/models) · `claude-sonnet-4-5`_'
             ].join('\n');
 
             await github.rest.issues.createComment({

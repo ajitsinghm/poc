@@ -1,0 +1,162 @@
+name: React - AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.js'
+      - '**/*.jsx'
+      - '**/*.css'
+      - '**/*.scss'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
+
+permissions:
+  contents: read
+  pull-requests: write
+  models: read
+
+jobs:
+  build-and-test:
+    name: React Build & Test
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test -- --watchAll=false --passWithNoTests
+
+      - name: Build
+        run: npm run build
+
+  ai-review:
+    name: React AI Code Review
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff (React/TS files only)
+        id: get-diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD \
+            -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.css' '*.scss' \
+            | head -c 28000 > pr_diff.txt
+          if [ -s pr_diff.txt ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: AI Code Review via GitHub Models
+        if: steps.get-diff.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync('pr_diff.txt', 'utf8').trim();
+
+            const systemPrompt = [
+              'You are an expert React and TypeScript code reviewer. Review the diff and report issues using this format:',
+              '**[SEVERITY]** `file:line` — problem description and suggested fix.',
+              'Severity levels: CRITICAL (security/data loss), MAJOR (correctness/broken UX), MINOR (style/quality).',
+              'If nothing is wrong, say "✅ No issues found."',
+              '',
+              'Enforce these rules:',
+              '',
+              '## API Integration',
+              '1. All API calls must go through a centralized API client — no raw fetch/axios calls in components.',
+              '2. Bearer token must be attached via request interceptor, not hardcoded in individual calls.',
+              '3. Every API response must be typed — no use of `any` for response data.',
+              '4. Errors from the standard envelope ({ status, error: { code, message } }) must be extracted and shown to the user.',
+              '5. Loading and error states must be handled in every data-fetching component.',
+              '',
+              '## React Best Practices',
+              '6. No direct DOM manipulation — use refs or state.',
+              '7. useEffect dependencies must be complete and correct — flag missing deps or infinite loops.',
+              '8. Heavy computations inside render must use useMemo/useCallback.',
+              '9. Lists must have stable, unique `key` props — no array indices as keys.',
+              '10. Component names must be PascalCase; hooks must start with `use`.',
+              '11. Props must be typed with interfaces/types — no implicit `any` props.',
+              '',
+              '## Security',
+              '12. No use of dangerouslySetInnerHTML unless sanitized — flag as CRITICAL.',
+              '13. No sensitive data (tokens, passwords, PII) stored in localStorage or state logged to console.',
+              '14. User-supplied URLs must not be set as href/src without validation (open redirect / XSS).',
+              '15. No hardcoded API keys or secrets.',
+              '',
+              '## Code Quality',
+              '16. No unused imports, variables, or dead code.',
+              '17. Async functions must have try/catch or .catch() — unhandled promise rejections are MAJOR.',
+              '18. No console.log left in production code.',
+              '19. Accessibility: interactive elements must be keyboard accessible; images must have alt text.'
+            ].join('\n');
+
+            const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+              },
+              body: JSON.stringify({
+                model: 'claude-sonnet-4-5',
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: `Review this React/TypeScript PR diff:\n\`\`\`diff\n${diff}\n\`\`\`` }
+                ],
+                max_tokens: 2048,
+                temperature: 0.1
+              })
+            });
+
+            if (!res.ok) {
+              const errText = await res.text();
+              core.setFailed(`GitHub Models API error ${res.status}: ${errText}`);
+              return;
+            }
+
+            const json = await res.json();
+            const review = json.choices[0].message.content;
+
+            const body = [
+              '## ⚛️ React AI Code Review',
+              '',
+              review,
+              '',
+              '---',
+              '_Powered by [GitHub Models](https://github.com/marketplace/models) · `claude-sonnet-4-5`_'
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            });

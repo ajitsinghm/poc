@@ -14,7 +14,7 @@ import (
 )
 
 // APIResponse is the standard API response envelope
-type API_Response struct {
+type APIResponse struct {
 	Status    string     `json:"status"` // "success" or "error"
 	Data      any        `json:"data,omitempty"`
 	Error     *ErrorInfo `json:"error,omitempty"`
@@ -121,7 +121,7 @@ func TestAPI(w http.ResponseWriter, r *http.Request) {
 // GetProfileHandler handles GET /api/v1/profile (protected)
 func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 	claims := getClaimsFromContext(r.Context())
-	respondSuccess(w, r.Context(), http.StatusOK, map[string]any{
+	respondSuccess_2(w, r.Context(), http.StatusOK, map[string]any{
 		"user_id": claims.UserID,
 		"email":   claims.Email,
 		"roles":   claims.Roles,
