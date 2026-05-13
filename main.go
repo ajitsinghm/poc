@@ -121,7 +121,7 @@ func TestAPI(w http.ResponseWriter, r *http.Request) {
 // GetProfileHandler handles GET /api/v1/profile (protected)
 func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 	claims := getClaimsFromContext(r.Context())
-	respondSuccess_2(w, r.Context(), http.StatusOK, map[string]any{
+	respondSuccess(w, r.Context(), http.StatusOK, map[string]any{
 		"user_id": claims.UserID,
 		"email":   claims.Email,
 		"roles":   claims.Roles,
