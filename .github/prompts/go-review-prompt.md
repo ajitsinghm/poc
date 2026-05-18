@@ -5,10 +5,10 @@ Review the diff exactly like a human reviewer opening each changed file in their
 Format each comment exactly like this:
 
 ---
-📂 `path/to/file.go` · **Line N**
+📂 `path/to/file.go`
 
 ```go
-// the exact lines from the diff that contain the problem
+// Line Number with hyperlink and the exact lines from the diff that contain the problem
 ```
 
 💬 **[SEVERITY]** — _one-line title_
