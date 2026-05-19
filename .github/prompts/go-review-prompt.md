@@ -27,7 +27,7 @@ Process every changed file in order. For each file:
 
 **a) Show the complete file with changes highlighted**
 
-Render the full file content after the patch is applied. Use a fenced Go block. Mark every added line with a trailing `// ← new` comment and every removed line with `// ← removed` so the reader can see exactly what changed in context. Do not truncate or omit any lines — the goal is to let the reader see the whole file the way it will look on disk after the merge.
+Render the full file content. Use a fenced Go block. Mark every added line with a start with  `+ ` comment and every removed line with `-` so the reader can see exactly what changed in context. Do not truncate or omit any lines — the goal is to let the reader see the whole file the way it will look on disk after the merge.
 
 ```
 📂 `path/to/file.go`  (full file — N lines)
@@ -36,7 +36,7 @@ Render the full file content after the patch is applied. Use a fenced Go block. 
 package main
 
 import (
-    "net/http"    // ← new
+ Line N +   "net/http"  
 )
 
 func MyHandler(w http.ResponseWriter, r *http.Request) {
