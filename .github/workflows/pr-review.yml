@@ -88,18 +88,15 @@ jobs:
             const review = json.choices[0].message.content;
 
             const body = [
-              'Hey, I took a look at your Go changes — here are my thoughts:',
+              '## 🐹 Go AI Code Review',
               '',
               review,
-              '',
-              '---',
-              '_This review was generated automatically. If anything looks off, feel free to ignore or push back._'
+              ''
             ].join('\n');
 
-            await github.rest.pulls.createReview({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              event: 'COMMENT',
+              issue_number: context.payload.pull_request.number,
               body
             });
