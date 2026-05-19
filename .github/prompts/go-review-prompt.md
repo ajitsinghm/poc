@@ -31,7 +31,7 @@ Render the full file using a standard diff block (` ```diff `). Number every lin
 
 Example format:
 
-📂 `path/to/file.go` (full file — 9 lines)
+📂 `path/to/file.go` (line 4)
 
 ```diff
   1  package main
@@ -50,28 +50,6 @@ Example format:
 **b) Walk the changed lines and leave inline comments**
 
 After showing the full file, emit one comment block per issue or noteworthy line. Anchor every comment to the exact line number in the full-file listing above. Comments must appear in ascending line order.
-
-Use this format for each comment:
-
----
-📂 `path/to/file.go` · **Line N** — `the exact text of that line`
-
-> **blocking** | **nit** | **suggestion** | **question** | **praise**
->
-> Your comment here — direct, conversational, specific. What is the problem or observation and why does it matter?
-
-```go
-// suggested replacement (only when a concrete fix is possible)
-```
-
----
-
-Comment label guide:
-- **blocking** — must be resolved before merge (security hole, data loss, correctness bug, missing auth, wrong status code)
-- **nit** — take it or leave it; style, naming, minor convention
-- **suggestion** — not required but worth considering; design or clarity improvement
-- **question** — you are genuinely unsure what the author intended; ask before guessing
-- **praise** — call out a good decision explicitly so the author knows what to keep doing
 
 Repeat the full-file block + inline comments for every changed file before moving on to the next.
 
