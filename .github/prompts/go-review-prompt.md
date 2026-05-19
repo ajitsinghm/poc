@@ -21,22 +21,42 @@ Write 2-4 sentences as if you just finished reading the whole diff. Give your ho
 Example tone (do not copy verbatim):
 > "Solid direction here. The handler pattern is clean and consistent with the rest of the codebase. I have a few blocking concerns around the auth check and one nit on the error message wording — see inline."
 
-**2. Inline file comments**
+**2. Per-file review block**
 
-Process every changed file in order. Within each file, go hunk by hunk and leave your comment **immediately after the offending or noteworthy lines**. Never batch issues at the top of a file.
+Process every changed file in order. For each file:
+
+**a) Show the complete file with changes highlighted**
+
+Render the full file content after the patch is applied. Use a fenced Go block. Mark every added line with a trailing `// ← new` comment and every removed line with `// ← removed` so the reader can see exactly what changed in context. Do not truncate or omit any lines — the goal is to let the reader see the whole file the way it will look on disk after the merge.
+
+```
+📂 `path/to/file.go`  (full file — N lines)
+
+​```go
+package main
+
+import (
+    "net/http"    // ← new
+)
+
+func MyHandler(w http.ResponseWriter, r *http.Request) {
+    // ... rest of file unchanged ...
+}
+​```
+```
+
+**b) Walk the changed lines and leave inline comments**
+
+After showing the full file, emit one comment block per issue or noteworthy line. Anchor every comment to the exact line number in the full-file listing above. Comments must appear in ascending line order.
 
 Use this format for each comment:
 
 ---
-📂 `path/to/file.go` · **Line N**
-
-```go
-// exact lines from the diff (include the leading + or - to show context)
-```
+📂 `path/to/file.go` · **Line N** — `the exact text of that line`
 
 > **blocking** | **nit** | **suggestion** | **question** | **praise**
 >
-> Your comment here — direct, conversational, specific. What is the problem or observation and why does it matter? If it is a fix, show the corrected code.
+> Your comment here — direct, conversational, specific. What is the problem or observation and why does it matter?
 
 ```go
 // suggested replacement (only when a concrete fix is possible)
@@ -50,6 +70,8 @@ Comment label guide:
 - **suggestion** — not required but worth considering; design or clarity improvement
 - **question** — you are genuinely unsure what the author intended; ask before guessing
 - **praise** — call out a good decision explicitly so the author knows what to keep doing
+
+Repeat the full-file block + inline comments for every changed file before moving on to the next.
 
 **3. Closing verdict (always last)**
 
