@@ -27,11 +27,13 @@ Process every changed file in order. For each file:
 
 **a) Show the complete file with changes highlighted**
 
-Render the full file using a standard diff block (` ```diff `). Number every line. Prefix every added line with `+` and every removed line with `-`; unchanged lines get a space prefix. Do not truncate or omit any lines — show the entire file so the reader can see the change in full context.
+Render the full file using a standard diff block (` ```diff `). Number every line. Prefix every added line with `+` and every removed line with `-`; unchanged lines get a space prefix. Do not truncate or omit any lines — show the entire file so the reader can see the change in full context. After showing the full file, emit one comment block per issue or noteworthy line. Anchor every comment to the exact line number in the full-file listing above. Comments must appear in ascending line order.
+
+Repeat the full-file block + inline comments for every changed file before moving on to the next.
 
 Example format:
 
-📂 `path/to/file.go` (line 4)
+📂 `path/to/file.go`
 
 ```diff
   1  package main
