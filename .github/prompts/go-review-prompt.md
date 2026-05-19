@@ -22,7 +22,7 @@ Example tone (do not copy verbatim):
 > "Solid direction here. The handler pattern is clean and consistent with the rest of the codebase. I have a few blocking concerns around the auth check and one nit on the error message wording — see inline."
 
 **2. Per-file review block**
-
+📂 `path/to/file.go` · **Line N** — `the exact text of that line`
 Process every changed file in order. For each file:
 
 **a) Show the complete file with changes highlighted**
@@ -50,9 +50,6 @@ Example format:
 After showing the full file, emit one comment block per issue or noteworthy line. Anchor every comment to the exact line number in the full-file listing above. Comments must appear in ascending line order.
 
 Use this format for each comment:
-
----
-📂 `path/to/file.go` · **Line N** — `the exact text of that line`
 
 > **blocking** | **nit** | **suggestion** | **question** | **praise**
 >
