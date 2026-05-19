@@ -27,23 +27,8 @@ Process every changed file in order. For each file:
 
 **a) Show the complete file with changes highlighted**
 
-Render the full file content. Use a fenced Go block. Mark every added line with a start with  `+ ` comment and every removed line with `-` so the reader can see exactly what changed in context. Do not truncate or omit any lines — the goal is to let the reader see the whole file the way it will look on disk after the merge.
+Render the full file content with N . Mark every added line with a starting `+` green color comment and every removed line with `-` red color so the reader can see exactly what changed in context. Do not truncate or omit any lines — the goal is to let the reader see the whole file the way it will look on disk after the merge.
 
-```
-📂 `path/to/file.go`  (full file — N lines)
-
-​```go
-package main
-
-import (
- Line N +   "net/http"  
-)
-
-func MyHandler(w http.ResponseWriter, r *http.Request) {
-    // ... rest of file unchanged ...
-}
-​```
-```
 
 **b) Walk the changed lines and leave inline comments**
 
