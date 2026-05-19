@@ -27,7 +27,22 @@ Process every changed file in order. For each file:
 
 **a) Show the complete file with changes highlighted**
 
-Render the full file content with N . Mark every added line with a starting `+` green color comment and every removed line with `-` red color so the reader can see exactly what changed in context. Do not truncate or omit any lines — the goal is to let the reader see the whole file the way it will look on disk after the merge.
+Render the full file using a standard diff block (` ```diff `). Number every line. Prefix every added line with `+` and every removed line with `-`; unchanged lines get a space prefix. Do not truncate or omit any lines — show the entire file so the reader can see the change in full context.
+
+Example format:
+
+```diff
+  1  package main
+  2
+  3  import (
++ 4      "net/http"
+- 4      "fmt"
+  5  )
+  6
+  7  func MyHandler(w http.ResponseWriter, r *http.Request) {
+  8      // ...
+  9  }
+```
 
 
 **b) Walk the changed lines and leave inline comments**
