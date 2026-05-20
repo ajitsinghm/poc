@@ -27,7 +27,7 @@ Process every changed file in order. For each file:
 
 **a) Show the complete file with changes highlighted**
 
-Render the full file using a standard diff block (` ```diff `). Number every line. Prefix every added line with `+` and every removed line with `-`; unchanged lines get a space prefix. Do not truncate or omit any lines — show the entire file so the reader can see the change in full context. After showing the full file, emit one comment block per issue or noteworthy line. Anchor every comment to the exact line number in the full-file listing above. Comments must appear in ascending line order.
+Render the full file using a standard diff block (` ```diff `). Number every line using its **actual line number in the new (post-change) version of the file**. Prefix every added line with `+` and every removed line with `-`; unchanged lines get a space prefix. Removed lines (`-`) do NOT get a new-file line number — leave the number column blank for them (e.g. `  -     "fmt"`), since they do not exist in the resulting file. Added lines and unchanged lines always show their real new-file line number. Do not truncate or omit any lines — show the entire file so the reader can see the change in full context.
 
 Repeat the full-file block + inline comments for every changed file before moving on to the next.
 
@@ -39,8 +39,8 @@ Example format:
   1  package main
   2
   3  import (
+  -      "fmt"
 + 4      "net/http"
-- 4      "fmt"
   5  )
   6
   7  func MyHandler(w http.ResponseWriter, r *http.Request) {
