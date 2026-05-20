@@ -14,7 +14,7 @@ import (
 )
 
 // APIResponse is the standard API response envelope
-type APIResponse struct {
+type API_Response struct {
 	Status    string     `json:"status"` // "success" or "error"
 	Data      any        `json:"data,omitempty"`
 	Error     *ErrorInfo `json:"error,omitempty"`
@@ -271,4 +271,3 @@ func RequireRole(allowedRoles ...string) func(http.Handler) http.Handler {
 		})
 	}
 }
-

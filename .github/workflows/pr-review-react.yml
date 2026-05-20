@@ -1,0 +1,100 @@
+name: React - AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.js'
+      - '**/*.jsx'
+      - '**/*.css'
+      - '**/*.scss'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
+
+permissions:
+  contents: read
+  pull-requests: write
+  models: read
+
+jobs:
+  build-and-test:
+    name: React Build & Test
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+  ai-review:
+    name: React AI Code Review
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff (React/TS files only)
+        id: get-diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD \
+            -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.css' '*.scss' \
+            | head -c 28000 > pr_diff.txt
+          if [ -s pr_diff.txt ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: AI Code Review via GitHub Models
+        if: steps.get-diff.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync('pr_diff.txt', 'utf8').trim();
+            const systemPrompt = fs.readFileSync('.github/prompts/react-review-prompt.md', 'utf8').trim();
+
+            const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: `Review this React/TypeScript PR diff:\n\`\`\`diff\n${diff}\n\`\`\`` }
+                ],
+                max_tokens: 2048,
+                temperature: 0.1
+              })
+            });
+
+            if (!res.ok) {
+              const errText = await res.text();
+              core.setFailed(`GitHub Models API error ${res.status}: ${errText}`);
+              return;
+            }
+
+            const json = await res.json();
+            const review = json.choices[0].message.content;
+
+            const body = [
+              '## ⚛️ React AI Code Review',
+              '',
+              review,
+              ''
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            });
