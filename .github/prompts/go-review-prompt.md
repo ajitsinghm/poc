@@ -27,12 +27,12 @@ Process every changed file in order. For each file:
 
 **a) Show the diff as provided by GitHub**
 
-The diff you receive has each line annotated with its GitHub-provided line number as a leading column before the `+`/`-`/` ` sign. Display it inside a ` ```diff ` block exactly as received. Do not recompute or alter any numbers.
+The diff you receive uses a two-column line number format provided by GitHub: `{old} {new} {+/-/ } {content}`.
+- Removed lines (`-`): old-file line number is filled, new-file column is blank.
+- Added lines (`+`): old-file column is blank, new-file line number is filled.
+- Context lines (` `): both columns are filled with the same number.
 
-Format: `{line_number} {+/-/ } {content}`
-- Removed lines: old-file line number + `-`
-- Added lines: new-file line number + `+`
-- Context lines: new-file line number + ` `
+Display it inside a ` ```diff ` block exactly as received. Do not recompute or alter any numbers.
 
 Example format:
 
@@ -40,26 +40,30 @@ Example format:
 
 ```diff
 @@ -3,5 +3,5 @@
-3   import (
-4 -     "fmt"
-4 +     "net/http"
-5   )
+3  3    import (
+4     -     "fmt"
+   4  +     "net/http"
+5  5    )
 ```
 
 
 **b) Walk the changed lines and leave inline comments**
 
-After showing the diff, emit one comment block per issue or noteworthy line. Use the line number in the leading column of that line as the comment anchor — do not compute or derive it. Comments must appear in ascending line order.
+After showing the diff, emit one comment block per issue or noteworthy line. For **added** and **context** lines, anchor the comment to the **new-file line number** (second column). For **removed** lines, anchor to the **old-file line number** (first column). Read the number directly from the diff — do not compute it. Comments must appear in ascending line order.
 
 Comment format:
 
-> **Line {N} · 🔴 Blocking** (or **🟡 Nit** / **🟢 Positive**)
+> **Line {N} (new) · 🔴 Blocking** — for added/context lines, use the new-file line number (second column)
+> **Line {N} (old) · 🔴 Blocking** — for removed lines, use the old-file line number (first column)
 > Your comment here.
 
 Example:
 
-> **Line 4 · 🔴 Blocking**
-> We are replacing `"fmt"` with `"net/http"` but `fmt` is still used on line 27 — this will break compilation.
+> **Line 4 (old) · 🔴 Blocking**
+> We are removing `"fmt"` here but it is still referenced elsewhere in the file — this will break compilation.
+
+> **Line 4 (new) · 🟡 Nit**
+> `"net/http"` is already imported two lines above — this is a duplicate import.
 
 Repeat the diff block + inline comments for every changed file before moving on to the next.
 
