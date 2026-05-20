@@ -46,9 +46,9 @@ Provide feedback as:
 
 **🔴 Critical Issues** - Must fix before merge
 **🟡 Suggestions** - Improvements to consider
-**✅ Good Practices** - What's done well
 
 For each issue:
+- Provide change file path
 - Specific line references
 - Clear explanation of the problem
 - Suggested solution with code example
