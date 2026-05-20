@@ -44,7 +44,7 @@ Provide feedback as:
 
 For each issue:
 - Provide change file path
-- Specific line references
+- Specific line references which has the change
 - Clear explanation of the problem
 - Suggested solution with code example
 - Rationale for the change
