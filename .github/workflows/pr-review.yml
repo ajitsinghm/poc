@@ -61,14 +61,14 @@ jobs:
             const diff = fs.readFileSync('pr_diff.txt', 'utf8').trim();
             const systemPrompt = fs.readFileSync('.github/prompts/go-review-prompt.md', 'utf8').trim();
 
-            const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+            const res = await fetch('https://models.github.ai/inference/chat/completions', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'gpt-4o-mini',
+                model: 'anthropic/claude-opus-4-1',
                 messages: [
                   { role: 'system', content: systemPrompt },
                   { role: 'user', content: `Review this Go PR diff:\n\`\`\`diff\n${diff}\n\`\`\`` }
