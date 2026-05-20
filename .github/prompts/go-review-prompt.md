@@ -27,24 +27,34 @@ Process every changed file in order. For each file:
 
 **a) Show the diff as provided by GitHub**
 
-Render the diff exactly as returned by GitHub — do not recompute, renumber, or alter any line numbers. The diff hunk headers (`@@ -old +new @@`) and the line numbers embedded in the diff are the source of truth. Do not truncate or omit any hunks. Display the raw diff inside a ` ```diff ` block so the reader can see the full context of the change.
+The diff you receive has already been annotated with new-file line numbers by the tooling — each changed or context line is prefixed with its GitHub-provided line number in the format `L{N}`. Do not recompute or alter these numbers. Display the annotated diff inside a ` ```diff ` block exactly as received.
 
-Example format:
+Example format (line numbers are provided by GitHub, not computed by you):
 
 📂 `path/to/file.go`
 
 ```diff
 @@ -3,4 +3,4 @@
- import (
--    "fmt"
-+    "net/http"
- )
+L3   import (
+L3 -     "fmt"
+L3 +     "net/http"
+L4  )
 ```
 
 
 **b) Walk the changed lines and leave inline comments**
 
-After showing the diff, emit one comment block per issue or noteworthy line. Anchor every comment to the **line number from the GitHub diff** (taken directly from the `+new` side of the hunk header and line positions within the hunk). Do not compute line numbers yourself — use what GitHub provides. Comments must appear in ascending line order.
+After showing the diff, emit one comment block per issue or noteworthy line. Use the `L{N}` number annotated on that line in the diff directly as the comment anchor — do not compute or derive it. Comments must appear in ascending line order.
+
+Comment format:
+
+> **L{N} · 🔴 Blocking** (or **🟡 Nit** / **🟢 Positive**)
+> Your comment here.
+
+Example:
+
+> **L3 · 🔴 Blocking**
+> We are replacing `"fmt"` with `"net/http"` but `fmt` is still used on line 27 — this will break compilation.
 
 Repeat the diff block + inline comments for every changed file before moving on to the next.
 
