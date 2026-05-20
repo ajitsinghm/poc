@@ -27,24 +27,29 @@ Process every changed file in order. For each file:
 
 **a) Show the diff as provided by GitHub**
 
-The diff you receive has each changed line annotated with its GitHub-provided line number — `old:{N}` for removed lines and `new:{N}` for added lines. Context lines (unchanged) are also annotated with their new-file line number. Do not recompute or alter these numbers. Display the annotated diff inside a ` ```diff ` block exactly as received.
+The diff you receive has each line annotated with its GitHub-provided line number as a leading column before the `+`/`-`/` ` sign. Display it inside a ` ```diff ` block exactly as received. Do not recompute or alter any numbers.
 
-Example format (line numbers come from GitHub, not computed by you):
+Format: `{line_number} {+/-/ } {content}`
+- Removed lines: old-file line number + `-`
+- Added lines: new-file line number + `+`
+- Context lines: new-file line number + ` `
+
+Example format:
 
 📂 `path/to/file.go`
 
 ```diff
 @@ -3,5 +3,5 @@
-new:3  import (
-old:4 -    "fmt"
-new:4 +    "net/http"
-new:5  )
+3   import (
+4 -     "fmt"
+4 +     "net/http"
+5   )
 ```
 
 
 **b) Walk the changed lines and leave inline comments**
 
-After showing the diff, emit one comment block per issue or noteworthy line. Use the `new:{N}` line number annotated on that line as the comment anchor — do not compute or derive it. For removed lines use `old:{N}`. Comments must appear in ascending line order.
+After showing the diff, emit one comment block per issue or noteworthy line. Use the line number in the leading column of that line as the comment anchor — do not compute or derive it. Comments must appear in ascending line order.
 
 Comment format:
 
