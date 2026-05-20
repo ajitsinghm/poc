@@ -25,35 +25,28 @@ Example tone (do not copy verbatim):
 
 Process every changed file in order. For each file:
 
-**a) Show the complete file with changes highlighted**
+**a) Show the diff as provided by GitHub**
 
-Render the full file using a standard diff block (` ```diff `). Number every line using its **actual line number in the new (post-change) version of the file**. Prefix every added line with `+` and every removed line with `-`; unchanged lines get a space prefix. Removed lines (`-`) do NOT get a new-file line number — leave the number column blank for them (e.g. `  -     "fmt"`), since they do not exist in the resulting file. Added lines and unchanged lines always show their real new-file line number. Do not truncate or omit any lines — show the entire file so the reader can see the change in full context.
-
-Repeat the full-file block + inline comments for every changed file before moving on to the next.
+Render the diff exactly as returned by GitHub — do not recompute, renumber, or alter any line numbers. The diff hunk headers (`@@ -old +new @@`) and the line numbers embedded in the diff are the source of truth. Do not truncate or omit any hunks. Display the raw diff inside a ` ```diff ` block so the reader can see the full context of the change.
 
 Example format:
 
 📂 `path/to/file.go`
 
 ```diff
-  1  package main
-  2
-  3  import (
-  -      "fmt"
-+ 4      "net/http"
-  5  )
-  6
-  7  func MyHandler(w http.ResponseWriter, r *http.Request) {
-  8      // ...
-  9  }
+@@ -3,4 +3,4 @@
+ import (
+-    "fmt"
++    "net/http"
+ )
 ```
 
 
 **b) Walk the changed lines and leave inline comments**
 
-After showing the full file, emit one comment block per issue or noteworthy line. Anchor every comment to the exact line number in the full-file listing above. Comments must appear in ascending line order.
+After showing the diff, emit one comment block per issue or noteworthy line. Anchor every comment to the **line number from the GitHub diff** (taken directly from the `+new` side of the hunk header and line positions within the hunk). Do not compute line numbers yourself — use what GitHub provides. Comments must appear in ascending line order.
 
-Repeat the full-file block + inline comments for every changed file before moving on to the next.
+Repeat the diff block + inline comments for every changed file before moving on to the next.
 
 **3. Closing verdict (always last)**
 
