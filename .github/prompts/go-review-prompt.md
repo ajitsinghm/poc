@@ -27,33 +27,33 @@ Process every changed file in order. For each file:
 
 **a) Show the diff as provided by GitHub**
 
-The diff you receive has already been annotated with new-file line numbers by the tooling — each changed or context line is prefixed with its GitHub-provided line number in the format `L{N}`. Do not recompute or alter these numbers. Display the annotated diff inside a ` ```diff ` block exactly as received.
+The diff you receive has each changed line annotated with its GitHub-provided line number — `old:{N}` for removed lines and `new:{N}` for added lines. Context lines (unchanged) are also annotated with their new-file line number. Do not recompute or alter these numbers. Display the annotated diff inside a ` ```diff ` block exactly as received.
 
-Example format (line numbers are provided by GitHub, not computed by you):
+Example format (line numbers come from GitHub, not computed by you):
 
 📂 `path/to/file.go`
 
 ```diff
-@@ -3,4 +3,4 @@
-L3   import (
-L3 -     "fmt"
-L3 +     "net/http"
-L4  )
+@@ -3,5 +3,5 @@
+new:3  import (
+old:4 -    "fmt"
+new:4 +    "net/http"
+new:5  )
 ```
 
 
 **b) Walk the changed lines and leave inline comments**
 
-After showing the diff, emit one comment block per issue or noteworthy line. Use the `L{N}` number annotated on that line in the diff directly as the comment anchor — do not compute or derive it. Comments must appear in ascending line order.
+After showing the diff, emit one comment block per issue or noteworthy line. Use the `new:{N}` line number annotated on that line as the comment anchor — do not compute or derive it. For removed lines use `old:{N}`. Comments must appear in ascending line order.
 
 Comment format:
 
-> **L{N} · 🔴 Blocking** (or **🟡 Nit** / **🟢 Positive**)
+> **Line {N} · 🔴 Blocking** (or **🟡 Nit** / **🟢 Positive**)
 > Your comment here.
 
 Example:
 
-> **L3 · 🔴 Blocking**
+> **Line 4 · 🔴 Blocking**
 > We are replacing `"fmt"` with `"net/http"` but `fmt` is still used on line 27 — this will break compilation.
 
 Repeat the diff block + inline comments for every changed file before moving on to the next.
